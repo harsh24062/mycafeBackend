@@ -32,4 +32,15 @@ public class UserController {
     }
 
 
+    @PostMapping(path = "/login")
+    public ResponseEntity<String> login(@RequestBody Map<String,String> requestMap){
+        try {
+          return userService.login(requestMap); 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponseEntitty(CafeConstant.INVALID_DATA, HttpStatus.BAD_REQUEST);
+    }
+
+
 }
