@@ -1,5 +1,7 @@
 package com.mycafe.mycafe_backend.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -13,10 +15,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.mycafe.mycafe_backend.constant.CafeConstant;
+import com.mycafe.mycafe_backend.jwt.JwtFilter;
 import com.mycafe.mycafe_backend.jwt.JwtUtil;
 import com.mycafe.mycafe_backend.model.User;
 import com.mycafe.mycafe_backend.repository.UserRepo;
 import com.mycafe.mycafe_backend.utils.CafeUtils;
+import com.mycafe.mycafe_backend.utils.EmailUtils;
+import com.mycafe.mycafe_backend.wrapper.UserWrapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +39,13 @@ public class UserService {
     private JwtUtil jwtUtil;
 
     @Autowired
+    private JwtFilter jwtFilter;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private EmailUtils emailUtils;
 
     public ResponseEntity<String> signUp(Map<String,String> requestMap) {
 
@@ -75,7 +86,7 @@ public class UserService {
         user.setEmail(requestMap.get("email"));
         user.setContactNumber(requestMap.get("contactNumber"));
         user.setPassword(encoder().encode(requestMap.get("password")));
-        user.setStatus("false");
+        user.setStatus("true");
         user.setRole("user");
       
         return user;
@@ -84,6 +95,9 @@ public class UserService {
     private BCryptPasswordEncoder encoder(){
       return new BCryptPasswordEncoder(12);
     }
+
+
+
 
     public ResponseEntity<String> login(Map<String,String>requestMap) {
       log.info("Inside login");
@@ -105,6 +119,59 @@ public class UserService {
         log.error("{}",e);
       }
       return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<List<UserWrapper>> getAllUser() {
+      try {
+        if(jwtFilter.isAdmin()){
+          return new ResponseEntity<List<UserWrapper>>(userRepo.getAllUser(),HttpStatus.OK);
+        }else{
+          return new ResponseEntity<List<UserWrapper>>(new ArrayList<>(),HttpStatus.UNAUTHORIZED);
+        }
+
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+      
+      return new ResponseEntity<List<UserWrapper>>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+
+
+    public ResponseEntity<String> update(Map<String,String> requestMap) {
+      try {
+
+        if(jwtFilter.isAdmin()){
+           
+          Optional<User> optional=userRepo.findById(Integer.parseInt(requestMap.get("id")));
+          
+          if(optional.isPresent()){
+            userRepo.updateStatus(requestMap.get("status"),Integer.parseInt(requestMap.get("id")));
+            sendMailToAllAdmins(requestMap.get("status"),optional.get().getEmail(),userRepo.getAllAdmin());
+            return CafeUtils.getResponseEntitty("Status Updated",HttpStatus.OK);
+          }else{
+            return CafeUtils.getResponseEntitty("User Id not Exist",HttpStatus.BAD_REQUEST);
+          }
+
+        }else{
+          return CafeUtils.getResponseEntitty(CafeConstant.UNAUTHORIZED_REQUEST,HttpStatus.UNAUTHORIZED);
+        }
+        
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    private void sendMailToAllAdmins(String status, String email, List<String> allAdmins){
+      allAdmins.remove(jwtFilter.currentUser());
+      if(status!=null && status.equalsIgnoreCase("true")){
+        emailUtils.sendSimpleMessage(jwtFilter.currentUser(), "Account Approved","User: \n"+email+"\n Approved by Admin:\n"+jwtFilter.currentUser(), allAdmins);
+      }else{
+        emailUtils.sendSimpleMessage(jwtFilter.currentUser(), "Account Disabled","User: \n"+email+"\n Disabled by Admin:\n"+jwtFilter.currentUser(), allAdmins);
+      }
     }
 
 }

@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.mycafe.mycafe_backend.service.MyUserDetailService;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,9 @@ public class JwtFilter extends OncePerRequestFilter{
     @Autowired
     private MyUserDetailService myUserDetailService;
 
+    private Claims claims=null;
+    private String username=null; // its going to be email
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
        
@@ -37,11 +41,11 @@ public class JwtFilter extends OncePerRequestFilter{
        else{
            String  authString=request.getHeader("Authorization");
           String token=null;
-          String username=null;   // its going to be email;
         
           if(authString!=null && authString.startsWith("Bearer ")){
               token = authString.substring(7);
-             username = jwtUtil.extractUserName(token);
+              username = jwtUtil.extractUserName(token);
+              claims = jwtUtil.extractAllClaims(token);
             }
 
            if(username!=null && SecurityContextHolder.getContext().getAuthentication()==null){
@@ -56,6 +60,19 @@ public class JwtFilter extends OncePerRequestFilter{
 
           filterChain.doFilter(request, response);
         } 
+    }
+
+
+    public boolean isAdmin(){
+        return "admin".equalsIgnoreCase((String)claims.get("role"));
+    }
+
+    public boolean isUser(){
+        return "user".equalsIgnoreCase((String)claims.get("role"));
+    }
+
+    public String currentUser(){
+        return username;
     }
 
 }
