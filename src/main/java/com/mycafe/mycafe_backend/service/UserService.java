@@ -47,6 +47,9 @@ public class UserService {
     @Autowired
     private EmailUtils emailUtils;
 
+    @Autowired
+    private OtpService otpService;
+
     public ResponseEntity<String> signUp(Map<String,String> requestMap) {
 
        log.info("Inside signup {}",requestMap);
@@ -137,8 +140,6 @@ public class UserService {
     }
 
 
-
-
     public ResponseEntity<String> update(Map<String,String> requestMap) {
       try {
 
@@ -172,6 +173,57 @@ public class UserService {
       }else{
         emailUtils.sendSimpleMessage(jwtFilter.currentUser(), "Account Disabled","User: \n"+email+"\n Disabled by Admin:\n"+jwtFilter.currentUser(), allAdmins);
       }
+    }
+
+    public ResponseEntity<String> checkToken() {
+      return CafeUtils.getResponseEntitty("true",HttpStatus.OK);
+    }
+
+
+    // change Password Service
+    public ResponseEntity<String> changePassword(Map<String,String> requestMap) {
+       try {
+          Optional<User> optional=userRepo.findByEmail(jwtFilter.currentUser());
+          if(optional.isPresent()){
+            User user=optional.get();
+            if(encoder().matches(requestMap.get("oldPassword"),user.getPassword())){
+              user.setPassword(encoder().encode(requestMap.get("newPassword")));
+              userRepo.save(user);
+              return  CafeUtils.getResponseEntitty("Password Updated Successfully",HttpStatus.OK);
+            }else{
+              return CafeUtils.getResponseEntitty("Incorrect Old Password",HttpStatus.BAD_REQUEST);
+            }
+          }else{
+            return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+       } catch (Exception e) {
+        e.printStackTrace();
+       }
+       return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // forgot Password service
+    public ResponseEntity<String> forgotPassword(Map<String,String> requestMap) {
+      try {
+        Optional<User> optional=userRepo.findByEmail(requestMap.get("email"));
+        if(optional.isPresent()){
+            
+          //otp logic write here
+          String otp=otpService.generateOtp();
+          otpService.saveOtp(requestMap.get("email"), otp);
+
+          // send email to emailId with otp
+          emailUtils.forgotPassword(requestMap.get("email"),"mycafe OTP Verification to changePassword",otp);
+
+          return CafeUtils.getResponseEntitty("OTP sent to Your Email Id",HttpStatus.OK);
+
+        }else{
+          return CafeUtils.getResponseEntitty("Email doesn't exist!!",HttpStatus.BAD_REQUEST);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

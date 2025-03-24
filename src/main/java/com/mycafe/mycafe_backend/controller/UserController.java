@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mycafe.mycafe_backend.constant.CafeConstant;
+import com.mycafe.mycafe_backend.service.OtpService;
 import com.mycafe.mycafe_backend.service.UserService;
 import com.mycafe.mycafe_backend.utils.CafeUtils;
 import com.mycafe.mycafe_backend.wrapper.UserWrapper;
@@ -23,7 +24,10 @@ import com.mycafe.mycafe_backend.wrapper.UserWrapper;
 public class UserController {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
+
+    @Autowired
+    private OtpService otpService;
        
     // signup  --- add new entry in database for new user
     @PostMapping(path = "/signup")
@@ -69,5 +73,48 @@ public class UserController {
         return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR); 
     }
 
+
+    @GetMapping(path= "/checkToken")
+    public ResponseEntity<String> checkToken(){
+        try {
+           return  userService.checkToken();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @PostMapping(path = "/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody Map<String,String> requestMap){
+        try {
+            return userService.changePassword(requestMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    } 
+
+
+    @PostMapping(path = "/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String,String> requestMap){
+       try {
+         return userService.forgotPassword(requestMap);
+       } catch (Exception e) {
+        e.printStackTrace();
+       }
+       return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @PostMapping(path = "otp-changePassword")
+    public ResponseEntity<String> otpChangePassword(@RequestBody Map<String,String> requestMap){
+        try {
+          return  otpService.changePassword(requestMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
 }

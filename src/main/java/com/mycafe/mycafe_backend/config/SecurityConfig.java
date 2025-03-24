@@ -29,7 +29,7 @@ public class SecurityConfig {
         
         return http
                   .csrf(customizer -> customizer.disable())
-                  .authorizeHttpRequests(request -> request.requestMatchers("/user/login","/user/signup","/user/forgotPassword").permitAll().anyRequest().authenticated())
+                  .authorizeHttpRequests(request -> request.requestMatchers("/user/login","/user/signup","/user/forgotPassword","/user/otp-changePassword").permitAll().anyRequest().authenticated())
                   .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                   .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                   .build();
