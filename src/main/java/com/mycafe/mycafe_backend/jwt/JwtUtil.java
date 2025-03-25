@@ -22,7 +22,7 @@ public class JwtUtil {
    private SecretKey SECERT_KEY=Keys.hmacShaKeyFor(Base64.getDecoder().decode(seceretKey));
 
 
-   //NOTE-> here in String username , we will use email most probably as it will be unique for all users
+   //NOTE-> here in String username , we will use email as it will be unique for all users
 
    public String generateToken(String username, String role){
        Map<String,Object> claims=new HashMap<>();
@@ -37,7 +37,7 @@ public class JwtUtil {
                  .header().add("typ","JWT")
                  .and()
                  .issuedAt(new Date(System.currentTimeMillis()))
-                 .expiration(new Date(System.currentTimeMillis()+1000*60*60))  // i hour
+                 .expiration(new Date(System.currentTimeMillis()+1000*60*60))  // 1 hour
                  .signWith(SECERT_KEY)
                  .compact(); 
     }

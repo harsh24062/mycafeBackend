@@ -106,7 +106,6 @@ public class UserService {
       log.info("Inside login");
 
       try {
-
         Authentication authentication=authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestMap.get("email"),requestMap.get("password")));
         if(authentication.isAuthenticated()){
           if(myUserDetailService.getUserDetail().getStatus().equalsIgnoreCase("true")){
@@ -121,7 +120,7 @@ public class UserService {
       } catch (Exception e) {
         log.error("{}",e);
       }
-      return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
+      return CafeUtils.getResponseEntitty("Invalid Email or Password, Try Again!!!", HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<List<UserWrapper>> getAllUser() {

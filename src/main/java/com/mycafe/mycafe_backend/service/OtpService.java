@@ -79,7 +79,7 @@ public class OtpService {
           if(validateOtp(email, otp) && optional.isPresent()){
             User user=optional.get();
 
-            user.setPassword(encoder().encode(requestMap.get("email")));
+            user.setPassword(encoder().encode(requestMap.get("newPassword")));
             userRepo.save(user);
             
             return  CafeUtils.getResponseEntitty("Password Updated Successfully",HttpStatus.OK);
