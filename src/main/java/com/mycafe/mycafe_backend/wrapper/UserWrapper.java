@@ -8,13 +8,9 @@ import lombok.NoArgsConstructor;
 public class UserWrapper {
 
     private int id;
-
     private String name;
-
     private String email;
-
     private String contactNumber;
-
     private String status;
 
     public UserWrapper(int id, String name, String email, String contactNumber, String status) {

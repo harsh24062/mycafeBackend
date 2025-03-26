@@ -11,7 +11,7 @@ import com.mycafe.mycafe_backend.model.Category;
 @Repository
 public interface CategoryRepo extends JpaRepository<Category,Integer> {
 
-   @Query("SELECT c FROM Category c")
+   @Query("SELECT c FROM Category c WHERE c.id IN(SELECT p.category.id FROM Product p WHERE p.status='true')")
    List<Category> getAllCategory();
 
 }
