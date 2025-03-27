@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +56,47 @@ public class ProductController {
             e.printStackTrace();
         }
         return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PostMapping(path = "/delete/{id}")
+    public ResponseEntity<String> deleteProductById(@PathVariable(name = "id",required = true) int id){
+        try {
+            return productService.deleteProductById(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @PostMapping(path = "/updateStatus")
+    public ResponseEntity<String> updateStatus(@RequestBody Map<String,String> requestMap){
+      try {
+          return productService.updateStatus(requestMap);         
+        } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return CafeUtils.getResponseEntitty(CafeConstant.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping(path = "/getByCategory/{id}")
+    public ResponseEntity<List<ProductWrapper>> getByCategory(@PathVariable(name="id", required = true) int id){
+      try {
+      return  productService.getByCategory(id);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping(path = "/getById/{id}")
+    public ResponseEntity<ProductWrapper> getById(@PathVariable(name="id",required = true)int id){
+        try {
+            return productService.getProductById(id);
+        } catch (Exception e) {
+           e.printStackTrace();
+        }
+        return new ResponseEntity<>(new ProductWrapper(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

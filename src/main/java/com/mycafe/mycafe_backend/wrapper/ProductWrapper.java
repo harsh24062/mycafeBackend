@@ -13,6 +13,10 @@ public class ProductWrapper {
     private int categoryId;
     private String categoryName;
 
+    public ProductWrapper(){
+        
+    }
+
     public ProductWrapper(int id, String name, String description, int price, String status, int categoryId,
             String categoryName) {
         this.id = id;
