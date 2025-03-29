@@ -8,4 +8,6 @@ public class CafeConstant {
 
     public static final String UNAUTHORIZED_REQUEST = "Unauthorized Request."; 
 
+    public static final String STORE_LOCATION= "D:\\Resume project\\mycafe_pdf";
+
 }
